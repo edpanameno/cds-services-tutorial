@@ -10,7 +10,7 @@ app.use(bodyParser.json());
  * - CDS Services must implement CORS in order to be called from a web browser
  */
 app.use((request, response, next) => {
-  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Origin', 'http://sandbox.cds-hooks.org');
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   response.setHeader('Access-Control-Allow-Credentials', 'true');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -71,6 +71,7 @@ app.get('/cds-services', (request, response) => {
     prefetch: {
       // Request the Patient FHIR resource for the patient in context, where the EHR fills out the prefetch template
       // See details here: http://cds-hooks.org/specification/1.0/#prefetch-template
+      // this is so that this service doesn't have to go to FHIR to get data
       requestedPatient: 'Patient/{{context.patientId}}'
     }
   };
@@ -86,6 +87,7 @@ app.get('/cds-services', (request, response) => {
   const discoveryEndpointServices = {
     services: [ patientViewExample, orderSelectExample ]
   };
+
   response.send(JSON.stringify(discoveryEndpointServices, null, 2));
 });
 
@@ -106,6 +108,7 @@ app.post('/cds-services/patient-view-example', (request, response) => {
         // Use the patient's First and Last name
         summary: 'Now seeing: ' + patientResource.name[0].given[0] + ' ' + patientResource.name[0].family[0],
         indicator: 'info',
+        detail: "Patient Birthdate " + patientResource.birthDate[0],
         source: {
           label: 'CDS Service Tutorial',
           url: 'https://github.com/cerner/cds-services-tutorial/wiki/Patient-View-Service'
@@ -115,6 +118,11 @@ app.post('/cds-services/patient-view-example', (request, response) => {
             label: 'Learn more about CDS Hooks',
             url: 'http://cds-hooks.org',
             type: 'absolute'
+          },
+          {
+            label: 'Link to User Info',
+            url: 'http://engineering.cerner.com/smart-on-fhir-tutorial/example-smart-app/launch.html',
+            type: 'smart'
           }
         ]
       }
